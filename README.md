@@ -1,4 +1,4 @@
-[![Build Status](https://dev.azure.com/statisticsnorway/Dapla/_apis/build/status/statisticsnorway.rawdata-converter-app-altinn3?branchName=master)](https://dev.azure.com/statisticsnorway/Dapla/_build/latest?definitionId=xxx&branchName=master)
+[![Build Status](https://dev.azure.com/statisticsnorway/Dapla/_apis/build/status/statisticsnorway.avro-buddy-csv?repoName=statisticsnorway%2Favro-buddy-csv&branchName=master)](https://dev.azure.com/statisticsnorway/Dapla/_build/latest?definitionId=90&repoName=statisticsnorway%2Favro-buddy-csv&branchName=master)
 
 # avro-buddy-csv
 
