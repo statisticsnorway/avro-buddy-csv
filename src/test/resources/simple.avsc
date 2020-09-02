@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "simple",
+  "fields": [
+    {
+      "name": "someString",
+      "type": "string"
+    },
+    {
+      "name": "someInt",
+      "type": "int"
+    }
+  ]
+}

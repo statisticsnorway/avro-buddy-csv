@@ -1,0 +1,31 @@
+{
+  "type": "record",
+  "name": "root",
+  "fields": [
+    {
+      "type": "string",
+      "name": "someString"
+    },
+    {
+      "type": "int",
+      "name": "someInt"
+    },
+    {
+      "type": "boolean",
+      "name": "someBoolean"
+    },
+    {
+      "type": "double",
+      "name": "someDouble"
+    },
+    {
+      "name": "someNull",
+      "type": ["null", "string"]
+    }
+  ]
+}
+
+
+
+
+
