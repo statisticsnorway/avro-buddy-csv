@@ -2,7 +2,7 @@
 
 # avro-buddy-csv
 
-CSV -> GenericRecord
+CSV → Avro (GenericRecord)
 
 This project depends on [avro-buddy-core](https://github.com/statisticsnorway/avro-buddy-core)
 
@@ -23,6 +23,18 @@ This project depends on [avro-buddy-core](https://github.com/statisticsnorway/av
         Schema schema = getSchema("something.avsc");
         List<GenericRecord> records = new ArrayList<>();
         try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema)) {
+            csvToRecords.forEach(records::add);
+        }
+```
+
+To override default csv parser settings, you could do:
+
+```java
+        InputStream csvInputStream = getCsvFile("something.csv");
+        Schema schema = getSchema("something.avsc");
+        List<GenericRecord> records = new ArrayList<>();
+        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema, Map.of(
+           "delimiters", "|"))) {
             csvToRecords.forEach(records::add);
         }
 ```

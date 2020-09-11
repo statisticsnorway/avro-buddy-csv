@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Map;
 
 public class CsvToRecords implements AutoCloseable, Iterable<GenericRecord> {
 
@@ -20,29 +21,23 @@ public class CsvToRecords implements AutoCloseable, Iterable<GenericRecord> {
     private final SchemaBuddy schemaBuddy;
     private Callback callBack;
 
-    public CsvToRecords(String fileName, Schema schema) throws IOException {
-        this(new FileInputStream(fileName), schema);
-    }
-
-    public CsvToRecords(String fileName, Schema schema, ValueInterceptor valueInterceptor) throws IOException {
-        this(new FileInputStream(fileName), schema, valueInterceptor);
-    }
-
-    public CsvToRecords(byte[] data, Schema schema) throws IOException {
-        this(new ByteArrayInputStream(data), schema);
-    }
-
-    public CsvToRecords(byte[] data, Schema schema, ValueInterceptor valueInterceptor) throws IOException {
-        this(new ByteArrayInputStream(data), schema, valueInterceptor);
-    }
-
     public CsvToRecords(InputStream inputStream, Schema schema) throws IOException {
-        this(inputStream, schema, null);
+        this(inputStream, schema, (CsvParserSettings) null);
     }
 
-    public CsvToRecords(InputStream inputStream, Schema schema, ValueInterceptor valueInterceptor) throws IOException {
-        this.csvParser = new CsvParser(inputStream).withValueInterceptor(valueInterceptor);
+    public CsvToRecords(InputStream inputStream, Schema schema, Map<String, Object> settings) throws IOException {
+        this.csvParser = CsvParser.builder().withSettings(settings).buildFor(inputStream);
         this.schemaBuddy = SchemaBuddy.parse(schema);
+    }
+
+    public CsvToRecords(InputStream inputStream, Schema schema, CsvParserSettings settings) throws IOException {
+        this.csvParser = CsvParser.builder().withSettings(settings).buildFor(inputStream);
+        this.schemaBuddy = SchemaBuddy.parse(schema);
+    }
+
+    public CsvToRecords withValueInterceptor(ValueInterceptor valueInterceptor) {
+        csvParser.withValueInterceptor(valueInterceptor);
+        return this;
     }
 
     public CsvToRecords withCallBack(Callback callBack) {

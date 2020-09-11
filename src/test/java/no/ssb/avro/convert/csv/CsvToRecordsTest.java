@@ -44,7 +44,8 @@ class CsvToRecordsTest {
         InputStream csvInputStream = data("simple.csv");
         Schema schema = schema("simple.avsc");
         List<GenericRecord> records = new ArrayList<>();
-        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema, (field, value) -> {
+        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema)
+          .withValueInterceptor((field, value) -> {
             if ("someString".equals(field.getName()) && "Captain Joe".equals(value)) {
                 return "substituted value";
             }
