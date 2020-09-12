@@ -7,9 +7,6 @@ import no.ssb.avro.convert.core.ValueInterceptor;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
-import javax.xml.stream.XMLStreamException;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -46,7 +43,7 @@ public class CsvToRecords implements AutoCloseable, Iterable<GenericRecord> {
     }
 
     @Override
-    public void close() throws XMLStreamException, IOException {
+    public void close() throws IOException {
         csvParser.close();
     }
 

@@ -92,6 +92,7 @@ public class CsvParser implements AutoCloseable, Iterable<DataElement> {
     public Iterator<DataElement> iterator() {
 
         final ResultIterator<Record, ParsingContext> recordIterator = internalCsvParser.iterateRecords(inputStream).iterator();
+        final int expectedColumnCount = internalCsvParser.getRecordMetadata().headers().length;
 
         return new Iterator<>() {
             @Override
@@ -104,6 +105,10 @@ public class CsvParser implements AutoCloseable, Iterable<DataElement> {
                 Record record = recordIterator.next();
                 DataElement root = new DataElement("root");
                 record.toFieldMap().forEach((key, value) -> {
+                    if (record.getValues().length != expectedColumnCount) {
+                        throw new ColumnMismatchException("Expected " + expectedColumnCount + " columns, but encountered " + record.getValues().length);
+                    }
+
                     // TODO: Make this more robust
                     if (key.startsWith("#")) {
                         key = key.substring(1);
@@ -117,5 +122,11 @@ public class CsvParser implements AutoCloseable, Iterable<DataElement> {
                 return root;
             }
         };
+    }
+
+    public static class ColumnMismatchException extends InconsistentCsvDataException {
+        public ColumnMismatchException(String message) {
+            super(message);
+        }
     }
 }

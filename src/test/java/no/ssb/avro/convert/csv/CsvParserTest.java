@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CsvParserTest {
 
@@ -57,5 +58,26 @@ class CsvParserTest {
           .buildFor(inputStreamOf("pipe-separated.csv"));
         assertThat(csvParser.getDelimiter()).isEqualTo("|");
         assertThat(csvParser.getHeaders().size()).isEqualTo(17);
+    }
+
+    @Test
+    void csvWithColumnMismatch_shouldThrowInconsistentDataException() {
+
+        String csvWithColumnMismatch = "COL1;COL2;COL3\n" +
+          "somestring;13;blah\n" +
+          "somestring2;42;;blah2";
+
+        assertThatThrownBy(() -> {
+            CsvParser.builder()
+              .buildFor(csvWithColumnMismatch.getBytes())
+              .forEach(dataElement -> {});
+        }).isInstanceOf(InconsistentCsvDataException.class)
+          .hasMessageContaining("Expected 3 columns, but encountered 4");
+
+        // Should not fail:
+        String csvWithoutData = "COL1;COL2;COL3\n\n\n\n \n\n";
+        CsvParser.builder()
+          .buildFor(csvWithoutData.getBytes())
+          .forEach(dataElement -> {});
     }
 }
