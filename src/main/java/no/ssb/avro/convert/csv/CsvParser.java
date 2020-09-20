@@ -92,7 +92,8 @@ public class CsvParser implements AutoCloseable, Iterable<DataElement> {
     public Iterator<DataElement> iterator() {
 
         final ResultIterator<Record, ParsingContext> recordIterator = internalCsvParser.iterateRecords(inputStream).iterator();
-        final int expectedColumnCount = internalCsvParser.getRecordMetadata().headers().length;
+        final String[] headers = internalCsvParser.getRecordMetadata().headers();
+        final Map<String, String> columnNameOverrides = parserSettings.getColumnNameOverrides();
 
         return new Iterator<>() {
             @Override
@@ -104,17 +105,15 @@ public class CsvParser implements AutoCloseable, Iterable<DataElement> {
             public DataElement next() {
                 Record record = recordIterator.next();
                 DataElement root = new DataElement("root");
-                record.toFieldMap().forEach((key, value) -> {
-                    if (record.getValues().length != expectedColumnCount) {
-                        throw new ColumnMismatchException("Expected " + expectedColumnCount + " columns, but encountered " + record.getValues().length);
-                    }
+                record.toFieldMap(headers).forEach((key, value) -> {
+                    String elementName = columnNameOverrides.getOrDefault(key, key);
 
                     // TODO: Make this more robust
-                    if (key.startsWith("#")) {
-                        key = key.substring(1);
+                    if (elementName.startsWith("#")) {
+                        elementName = elementName.substring(1);
                     }
                     // TODO: Update avro-buddy-core to handle new DataElement(key, value) with valueInterceptor. That code is buggy
-                    DataElement e = new DataElement(key).withValueInterceptor(valueInterceptor);
+                    DataElement e = new DataElement(elementName).withValueInterceptor(valueInterceptor);
                     e.setValue(value);
                     root.addChild(e);
                   }
@@ -124,9 +123,4 @@ public class CsvParser implements AutoCloseable, Iterable<DataElement> {
         };
     }
 
-    public static class ColumnMismatchException extends InconsistentCsvDataException {
-        public ColumnMismatchException(String message) {
-            super(message);
-        }
-    }
 }

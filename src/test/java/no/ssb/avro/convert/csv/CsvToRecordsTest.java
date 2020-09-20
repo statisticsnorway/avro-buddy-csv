@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,6 +45,7 @@ class CsvToRecordsTest {
         InputStream csvInputStream = data("simple.csv");
         Schema schema = schema("simple.avsc");
         List<GenericRecord> records = new ArrayList<>();
+
         try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema)
           .withValueInterceptor((field, value) -> {
             if ("someString".equals(field.getName()) && "Captain Joe".equals(value)) {
@@ -58,4 +60,45 @@ class CsvToRecordsTest {
         assertThat(records.get(1).get("someString")).isEqualTo("substituted value");
     }
 
+    @Test
+    public void csvWithFunkyColumnNames_convertToGenericRecords_withRenamedColumns() throws Exception {
+        String scenario = "with-column-renames";
+        InputStream csvInputStream = data(scenario + ".csv");
+        Schema schema = schema(scenario + ".avsc");
+        List<GenericRecord> records = new ArrayList<>();
+        CsvParserSettings csvParserSettings = new CsvParserSettings().columnNameOverrides(Map.of(
+          "a column with spaces", "renamedCol1Name",
+          "a_column-with-$pecicialName!", "renamedCol2Name"
+        ));
+
+        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema, csvParserSettings)) {
+            csvToRecords.forEach(records::add);
+        }
+
+        assertThat(records.size()).isEqualTo(2);
+        assertThat(records.get(0).get("renamedCol1Name")).isEqualTo("Hey ho");
+        assertThat(records.get(0).get("renamedCol2Name")).isEqualTo("42");
+        assertThat(records.get(0).get("renamedCol3Name")).isEqualTo("foo");
+    }
+
+    @Test
+    public void csvWithFunkyColumnNames_convertToGenericRecords_withExplicitlyNamedColumns() throws Exception {
+        String scenario = "with-column-renames";
+        InputStream csvInputStream = data(scenario + ".csv");
+        Schema schema = schema(scenario + ".avsc");
+        List<GenericRecord> records = new ArrayList<>();
+        CsvParserSettings csvParserSettings = new CsvParserSettings().headers(List.of(
+          "renamedCol1Name",
+          "renamedCol2Name",
+          "renamedCol3Name"));
+
+        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema, csvParserSettings)) {
+            csvToRecords.forEach(records::add);
+        }
+
+        assertThat(records.size()).isEqualTo(2);
+        assertThat(records.get(0).get("renamedCol1Name")).isEqualTo("Hey ho");
+        assertThat(records.get(0).get("renamedCol2Name")).isEqualTo("42");
+        assertThat(records.get(0).get("renamedCol3Name")).isEqualTo("foo");
+    }
 }

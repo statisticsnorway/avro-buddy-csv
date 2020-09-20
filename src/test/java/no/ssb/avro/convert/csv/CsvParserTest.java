@@ -1,5 +1,6 @@
 package no.ssb.avro.convert.csv;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -61,23 +62,25 @@ class CsvParserTest {
     }
 
     @Test
-    void csvWithColumnMismatch_shouldThrowInconsistentDataException() {
+    void csvWithColumnMismatch_shouldParseSuccessfully() {
 
         String csvWithColumnMismatch = "COL1;COL2;COL3\n" +
           "somestring;13;blah\n" +
           "somestring2;42;;blah2";
 
-        assertThatThrownBy(() -> {
-            CsvParser.builder()
-              .buildFor(csvWithColumnMismatch.getBytes())
-              .forEach(dataElement -> {});
-        }).isInstanceOf(InconsistentCsvDataException.class)
-          .hasMessageContaining("Expected 3 columns, but encountered 4");
+        CsvParser.builder()
+          .buildFor(csvWithColumnMismatch.getBytes())
+          .forEach(dataElement -> {});
+    }
 
+    @Test
+    void csvWithoutData_shouldParseSuccessfully() {
         // Should not fail:
-        String csvWithoutData = "COL1;COL2;COL3\n\n\n\n \n\n";
+        String csvWithoutData = "COL1;COL2;COL3\n \n\n";
         CsvParser.builder()
           .buildFor(csvWithoutData.getBytes())
           .forEach(dataElement -> {});
     }
+
+
 }

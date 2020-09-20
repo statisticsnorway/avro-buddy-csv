@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "name": "simple",
+  "fields": [
+    {
+      "name": "renamedCol1Name",
+      "type": "string"
+    },
+    {
+      "name": "renamedCol2Name",
+      "type": "string"
+    },
+    {
+      "name": "renamedCol3Name",
+      "type": "string"
+    }
+  ]
+}
