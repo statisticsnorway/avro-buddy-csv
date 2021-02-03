@@ -72,7 +72,7 @@ public class CsvParserSettings {
         return this;
     }
 
-    com.univocity.parsers.csv.CsvParserSettings getInternal() {
+    public com.univocity.parsers.csv.CsvParserSettings getInternal() {
         return settings;
     }
 
