@@ -8,6 +8,7 @@ public class CsvParserSettings {
     public static final String DELIMITERS = "delimiters";
     public static final String HEADERS = "headers";
     public static final String COLUMN_NAME_OVERRIDES = "columnNameOverrides";
+    public static final String COLUMN_HEADERS_PRESENT = "columnHeadersPresent";
     public static final Map<String, String> columnNameOverrides = new HashMap<>();
 
     private final com.univocity.parsers.csv.CsvParserSettings settings;
@@ -40,6 +41,11 @@ public class CsvParserSettings {
         return this;
     }
 
+    public CsvParserSettings columnHeadersPresent(boolean columnHeadersPresent) {
+        settings.setHeaderExtractionEnabled(columnHeadersPresent);
+        return this;
+    }
+
     /**
      * Map of column name overrides that should be used in the converted results. If not specified, the converter will
      * assume that the target avro schema field name is the same as the source csv column name.
@@ -69,6 +75,10 @@ public class CsvParserSettings {
         if (configMap.containsKey(COLUMN_NAME_OVERRIDES)) {
             columnNameOverrides((Map<String, String>) configMap.get(COLUMN_NAME_OVERRIDES));
         }
+        if (configMap.containsKey(COLUMN_HEADERS_PRESENT)) {
+            columnHeadersPresent((Boolean) configMap.get(COLUMN_HEADERS_PRESENT));
+        }
+
         return this;
     }
 
