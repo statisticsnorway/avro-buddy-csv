@@ -3,14 +3,11 @@ package no.ssb.avro.convert.csv;
 import no.ssb.avro.convert.core.DataElement;
 import no.ssb.avro.convert.core.SchemaAwareElement;
 import no.ssb.avro.convert.core.SchemaBuddy;
-import no.ssb.avro.convert.core.ValueInterceptor;
-import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.Map;
 
 public class CsvToRecords implements AutoCloseable, Iterable<GenericRecord> {
 
@@ -18,23 +15,9 @@ public class CsvToRecords implements AutoCloseable, Iterable<GenericRecord> {
     private final SchemaBuddy schemaBuddy;
     private Callback callBack;
 
-    public CsvToRecords(InputStream inputStream, Schema schema) throws IOException {
-        this(inputStream, schema, (CsvParserSettings) null);
-    }
-
-    public CsvToRecords(InputStream inputStream, Schema schema, Map<String, Object> settings) throws IOException {
-        this.csvParser = CsvParser.builder().withSettings(settings).buildFor(inputStream);
-        this.schemaBuddy = SchemaBuddy.parse(schema);
-    }
-
-    public CsvToRecords(InputStream inputStream, Schema schema, CsvParserSettings settings) throws IOException {
-        this.csvParser = CsvParser.builder().withSettings(settings).buildFor(inputStream);
-        this.schemaBuddy = SchemaBuddy.parse(schema);
-    }
-
-    public CsvToRecords withValueInterceptor(ValueInterceptor valueInterceptor) {
-        csvParser.withValueInterceptor(valueInterceptor);
-        return this;
+    public CsvToRecords(CsvParserFactory csvParserFactory, InputStream inputStream, SchemaBuddy schemaBuddy) {
+        this.csvParser = csvParserFactory.parserFor(inputStream);
+        this.schemaBuddy = schemaBuddy;
     }
 
     public CsvToRecords withCallBack(Callback callBack) {

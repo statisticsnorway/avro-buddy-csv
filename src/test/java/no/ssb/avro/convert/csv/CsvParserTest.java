@@ -1,6 +1,6 @@
 package no.ssb.avro.convert.csv;
 
-import org.junit.jupiter.api.Disabled;
+import no.ssb.avro.convert.core.DataElement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CsvParserTest {
 
@@ -27,9 +26,10 @@ class CsvParserTest {
 
     CsvParser csvParserForScenario(String scenario) {
         CsvParserSettings settings = SCENARIO_SETTINGS.get(scenario);
-        return CsvParser.builder()
+        return CsvParserFactory.builder()
           .withSettings(SCENARIO_SETTINGS.get(scenario))
-          .buildFor(inputStreamOf(scenario + ".csv"));
+          .build()
+          .parserFor(inputStreamOf(scenario + ".csv"));
     }
 
     @ParameterizedTest
@@ -45,20 +45,24 @@ class CsvParserTest {
 
     @Test
     void pipeSeparatedCsv_shouldParse() {
-        // Auto detection of delimiters fails for this scenario
-        CsvParser csvParser = CsvParser.builder()
-          .buildFor(inputStreamOf("pipe-separated.csv"));
-        assertThat(csvParser.getDelimiter()).isEqualTo("."); // suprisingly!
-        assertThat(csvParser.getHeaders().size()).isEqualTo(1);
-
-        // so we explicitly set the delimiter
-        csvParser = CsvParser.builder()
-          .withSettings(Map.of(
-            CsvParserSettings.DELIMITERS, "|"
-          ))
-          .buildFor(inputStreamOf("pipe-separated.csv"));
-        assertThat(csvParser.getDelimiter()).isEqualTo("|");
-        assertThat(csvParser.getHeaders().size()).isEqualTo(17);
+        {
+            // Auto detection of delimiters fails for this scenario
+            CsvParserFactory factory = CsvParserFactory.builder().build();
+            factory.parserFor(inputStreamOf("pipe-separated.csv")).iterator().next(); // parse first data record in order to detect delimiter
+            assertThat(factory.getDelimiter()).isEqualTo("."); // suprisingly!
+            assertThat(factory.getHeaders().size()).isEqualTo(1);
+        }
+        {
+            // so we explicitly set the delimiter
+            CsvParserFactory factory = CsvParserFactory.builder()
+                    .withSettings(Map.of(
+                            CsvParserSettings.DELIMITERS, "|"
+                    ))
+                    .build();
+            factory.parserFor(inputStreamOf("pipe-separated.csv")).iterator().next(); // parse first data record
+            assertThat(factory.getDelimiter()).isEqualTo("|");
+            assertThat(factory.getHeaders().size()).isEqualTo(17);
+        }
     }
 
     @Test
@@ -68,8 +72,9 @@ class CsvParserTest {
           "somestring;13;blah\n" +
           "somestring2;42;;blah2";
 
-        CsvParser.builder()
-          .buildFor(csvWithColumnMismatch.getBytes())
+        CsvParserFactory.builder()
+          .build()
+          .parserFor(csvWithColumnMismatch.getBytes())
           .forEach(dataElement -> {});
     }
 
@@ -77,8 +82,9 @@ class CsvParserTest {
     void csvWithoutData_shouldParseSuccessfully() {
         // Should not fail:
         String csvWithoutData = "COL1;COL2;COL3\n \n\n";
-        CsvParser.builder()
-          .buildFor(csvWithoutData.getBytes())
+        CsvParserFactory.builder()
+          .build()
+          .parserFor(csvWithoutData.getBytes())
           .forEach(dataElement -> {});
     }
 

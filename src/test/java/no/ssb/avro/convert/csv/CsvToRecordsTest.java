@@ -1,5 +1,6 @@
 package no.ssb.avro.convert.csv;
 
+import no.ssb.avro.convert.core.SchemaBuddy;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,9 @@ class CsvToRecordsTest {
         InputStream csvInputStream = data(scenario + ".csv");
         Schema schema = schema(scenario + ".avsc");
         List<GenericRecord> records = new ArrayList<>();
-        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema)) {
+        CsvParserFactory factory = CsvParserFactory.builder()
+                .build();
+        try (CsvToRecords csvToRecords = new CsvToRecords(factory, csvInputStream, SchemaBuddy.parse(schema))) {
             csvToRecords.forEach(records::add);
         }
 
@@ -46,13 +49,15 @@ class CsvToRecordsTest {
         Schema schema = schema("simple.avsc");
         List<GenericRecord> records = new ArrayList<>();
 
-        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema)
-          .withValueInterceptor((field, value) -> {
-            if ("someString".equals(field.getName()) && "Captain Joe".equals(value)) {
-                return "substituted value";
-            }
-            return value;
-        })) {
+        CsvParserFactory factory = CsvParserFactory.builder()
+                .withValueInterceptor((field, value) -> {
+                    if ("someString".equals(field.getName()) && "Captain Joe".equals(value)) {
+                        return "substituted value";
+                    }
+                    return value;
+                })
+                .build();
+        try (CsvToRecords csvToRecords = new CsvToRecords(factory, csvInputStream, SchemaBuddy.parse(schema))) {
             csvToRecords.forEach(records::add);
         }
 
@@ -71,7 +76,9 @@ class CsvToRecordsTest {
           "a_column-with-$pecicialName!", "renamedCol2Name"
         ));
 
-        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema, csvParserSettings)) {
+        CsvParserFactory factory = CsvParserFactory.builder()
+                .build();
+        try (CsvToRecords csvToRecords = new CsvToRecords(factory, csvInputStream, SchemaBuddy.parse(schema))) {
             csvToRecords.forEach(records::add);
         }
 
@@ -92,7 +99,10 @@ class CsvToRecordsTest {
           "renamedCol2Name",
           "renamedCol3Name"));
 
-        try (CsvToRecords csvToRecords = new CsvToRecords(csvInputStream, schema, csvParserSettings)) {
+        CsvParserFactory factory = CsvParserFactory.builder()
+          .withSettings(csvParserSettings)
+          .build();
+        try (CsvToRecords csvToRecords = new CsvToRecords(factory, csvInputStream, SchemaBuddy.parse(schema))) {
             csvToRecords.forEach(records::add);
         }
 
